@@ -2,9 +2,11 @@ package com.example.smartvotingsystem.entity;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import org.springframework.data.annotation.Id;
 @Document("statementguest")
 public class StatementGuest {
 
+    @Id
     private String statementId;
     private String guestId;
     private int score;

@@ -1,11 +1,10 @@
 package com.example.smartvotingsystem.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.UniqueConstraint;
-
 import com.sun.istack.NotNull;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import javax.persistence.Column;
 import java.util.UUID;
 
 @Document("room")
@@ -14,7 +13,7 @@ public class Room {
     private String roomId = UUID.randomUUID().toString();
 
     @NotNull
-    @Column (unique = true)
+    @Column(unique = true)
     private String roomName;
     private String roomDescription;
     private String password;

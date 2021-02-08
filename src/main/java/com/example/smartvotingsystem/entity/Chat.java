@@ -1,7 +1,7 @@
 package com.example.smartvotingsystem.entity;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 @Document("chat")
 public class Chat {
     private String roomId;

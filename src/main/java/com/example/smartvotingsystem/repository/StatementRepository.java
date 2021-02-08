@@ -1,4 +1,9 @@
 package com.example.smartvotingsystem.repository;
 
-public interface StatementRepository {
+import com.example.smartvotingsystem.entity.Statement;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface StatementRepository extends MongoRepository<Statement , String> {
 }
