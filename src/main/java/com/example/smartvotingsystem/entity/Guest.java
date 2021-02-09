@@ -5,12 +5,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
 
 import javax.persistence.Column;
+import java.util.UUID;
 
 @Document("guest")
 public class Guest {
 
     @Id
-    private String guestId;
+    private String guestId = UUID.randomUUID().toString();
 
     @Indexed
     private String roomId;

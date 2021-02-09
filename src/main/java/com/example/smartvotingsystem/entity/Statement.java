@@ -4,10 +4,12 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
 
+import java.util.UUID;
+
 @Document("statement")
 public class Statement {
     @Id
-    private String statementId;
+    private String statementId = UUID.randomUUID().toString();
 
     @Indexed
     private String roomId;
