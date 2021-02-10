@@ -2,13 +2,17 @@ package com.example.smartvotingsystem.services.impl;
 
 import com.example.smartvotingsystem.dto.RoomAdmin;
 import com.example.smartvotingsystem.dto.RoomGuest;
+import com.example.smartvotingsystem.dto.Score;
 import com.example.smartvotingsystem.entity.Guest;
 import com.example.smartvotingsystem.repository.GuestRepository;
 import com.example.smartvotingsystem.services.GuestServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rx.Single;
+import rx.schedulers.Schedulers;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -18,16 +22,15 @@ public class GuestServicesImpl implements GuestServices {
     GuestRepository guestRepository;
 
     @Override
-    public Single<RoomGuest> addGuest(RoomGuest roomGuest) {
+    public Single<Guest> addGuest(RoomGuest roomGuest) {
         return addGuestInRoom(roomGuest);
     }
 
-    private Single<RoomGuest> addGuestInRoom(RoomGuest roomGuest) {
-        return Single.create(singleSubscriber -> {
+    private Single<Guest> addGuestInRoom(RoomGuest roomGuest) {
+        return Single.<Guest> create(singleSubscriber -> {
             Guest guest = guestRepository.save(toGuest(roomGuest));
-            RoomGuest newRoomGuest = new RoomGuest(roomGuest.getRoomName() , guest.getGuestName() , guest.getRoomId());
-            singleSubscriber.onSuccess(newRoomGuest);
-        });
+            singleSubscriber.onSuccess(guest);
+        }).subscribeOn(Schedulers.io());
     }
 
     private Guest toGuest(RoomGuest roomGuest) {
@@ -40,16 +43,15 @@ public class GuestServicesImpl implements GuestServices {
         return guest;
     }
     @Override
-    public Single<RoomAdmin> addAdmin(RoomAdmin roomAdmin) {
+    public Single<Guest> addAdmin(RoomAdmin roomAdmin) {
         return addAdminToRoom(roomAdmin);
     }
 
-    private Single<RoomAdmin> addAdminToRoom(RoomAdmin roomAdmin) {
-        return Single.create(singleSubscriber -> {
+    private Single<Guest> addAdminToRoom(RoomAdmin roomAdmin) {
+        return Single.<Guest> create(singleSubscriber -> {
             Guest guest = guestRepository.save(AdminToGuest(roomAdmin));
-            RoomAdmin newRandomAdmin = new RoomAdmin(guest.getRoomId() , roomAdmin.getRoomName());
-            singleSubscriber.onSuccess(newRandomAdmin);
-        });
+            singleSubscriber.onSuccess(guest);
+        }).subscribeOn(Schedulers.io());
     }
 
     private Guest AdminToGuest(RoomAdmin roomAdmin) {
@@ -62,4 +64,54 @@ public class GuestServicesImpl implements GuestServices {
         return guest;
     }
 
+    @Override
+    public Single<Guest> addScore(Score score) {
+        return addScoreToGuestRepository(score);
+    }
+
+    @Override
+    public Guest findGuestById(String guestId) {
+        return guestRepository.findById(guestId).get();
+    }
+
+    private Single<Guest> addScoreToGuestRepository(Score score) {
+        return Single.<Guest> create(singleSubscriber -> {
+            Optional<Guest> guest = guestRepository.findById(score.getGuestId());
+            // TODO: 10/02/21 check overwrite
+            if (guest.isPresent()) {
+                Guest guest1 = guestRepository.save(optionalGuestToGuest(guest, score));
+                singleSubscriber.onSuccess(guest1);
+            }
+//            else{
+//                singleSubscriber.onError();
+//            }
+        }).subscribeOn(Schedulers.io());
+    }
+
+    private Guest optionalGuestToGuest(Optional<Guest> guest , Score score) {
+        Guest newGuest = new Guest();
+        newGuest.setGuestId(guest.get().getGuestId());
+        newGuest.setRoomId(guest.get().getRoomId());
+        newGuest.setGuestScore(score.getScore());
+        newGuest.setVoted(true);
+        newGuest.setGuestName(guest.get().getGuestName());
+        return newGuest;
+    }
+
+
+    @Override
+    public Single<List<Guest>> getGuests(String roomId) {
+        return findAllGuests(roomId);
+    }
+
+    private Single<List<Guest>> findAllGuests(String roomId) {
+        return Single.<List<Guest>> create(singleSubscriber -> {
+            List<Guest> guestList = findByRoomId(roomId);
+            singleSubscriber.onSuccess(guestList);
+        }).subscribeOn(Schedulers.io());
+    }
+
+    private List<Guest> findByRoomId(String roomId) {
+        return guestRepository.findByRoomId(roomId);
+    }
 }

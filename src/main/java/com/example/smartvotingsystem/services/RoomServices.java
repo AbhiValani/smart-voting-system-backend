@@ -1,6 +1,8 @@
 package com.example.smartvotingsystem.services;
 
+import com.example.smartvotingsystem.dto.RoomPassword;
 import com.example.smartvotingsystem.entity.Room;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import rx.Single;
 
@@ -8,5 +10,7 @@ import rx.Single;
 public interface RoomServices {
     Single<Room> save (Room room);
 
-    Single<Boolean> getPasswordByRoomId(Room room);
+    Single<Boolean> getPasswordByRoomId(RoomPassword roomPassword);
+
+    Room findByRoomId(String roomId);
 }

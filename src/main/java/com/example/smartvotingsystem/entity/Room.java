@@ -2,9 +2,11 @@ package com.example.smartvotingsystem.entity;
 
 import com.sun.istack.NotNull;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.Column;
+import javax.persistence.Index;
 import java.util.UUID;
 
 @Document("room")
@@ -12,8 +14,7 @@ public class Room {
     @Id
     private String roomId = UUID.randomUUID().toString();
 
-    @NotNull
-    @Column(unique = true)
+    @Indexed(unique = true)
     private String roomName;
     private String roomDescription;
     private String password;
