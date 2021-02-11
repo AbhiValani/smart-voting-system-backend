@@ -39,12 +39,17 @@ public class GuestServicesImpl implements GuestServices {
     }
 
     private Single<Guest> addGuestInRoom(RoomGuest roomGuest) {
-        return Single.<Guest> create(singleSubscriber -> {
-            Guest guest = guestRepository.save(toGuest(roomGuest));
-            singleSubscriber.onSuccess(guest);
-        }).subscribeOn(Schedulers.io());
+        return Single.<Guest> create(
+                singleSubscriber -> {
+                    Optional<Room> room = roomRepository.findById(roomGuest.getRoomId());
+                    if(room.isPresent()){
+                        Guest guest = guestRepository.save(toGuest(roomGuest));
+                        singleSubscriber.onSuccess(guest);
+                    }else{
+                       singleSubscriber.onError(new EntityNotFoundException());
+                    }
+                }).subscribeOn(Schedulers.io());
     }
-
     private Guest toGuest(RoomGuest roomGuest) {
         Guest guest = new Guest();
         guest.setGuestId(UUID.randomUUID().toString());
@@ -60,16 +65,22 @@ public class GuestServicesImpl implements GuestServices {
     }
 
     private Single<Guest> addAdminToRoom(RoomAdmin roomAdmin) {
-        return Single.<Guest> create(singleSubscriber -> {
-            Guest guest = guestRepository.save(AdminToGuest(roomAdmin));
-            singleSubscriber.onSuccess(guest);
-        }).subscribeOn(Schedulers.io());
+        return Single.<Guest> create(
+                singleSubscriber -> {
+                    Optional<Room> room = roomRepository.findById(roomAdmin.getRoomId());
+                    if (room.isPresent()){
+                        Guest guest = guestRepository.save(AdminToGuest(roomAdmin));
+                        singleSubscriber.onSuccess(guest);
+                    }else{
+                        singleSubscriber.onError(new EntityNotFoundException());
+                    }
+                 }).subscribeOn(Schedulers.io());
     }
 
     private Guest AdminToGuest(RoomAdmin roomAdmin) {
         Guest guest = new Guest();
         guest.setGuestId(UUID.randomUUID().toString());
-        guest.setGuestName("Admin");
+        guest.setGuestName("admin");
         guest.setVoted(false);
         guest.setGuestScore(0);
         guest.setRoomId(roomAdmin.getRoomId());
@@ -83,27 +94,29 @@ public class GuestServicesImpl implements GuestServices {
 
     @Override
     public Single<Guest> findGuestById(String guestId) {
-        return Single.create(singleSubscriber -> {
-           Optional<Guest> guest = guestRepository.findById(guestId);
-           if (guest.isPresent()){
-               singleSubscriber.onSuccess(guest.get());
-           }else{
-               singleSubscriber.onError(new EntityNotFoundException());
-           }
-        });
+        return Single. <Guest> create(
+                singleSubscriber -> {
+                   Optional<Guest> guest = guestRepository.findById(guestId);
+                   if (guest.isPresent()){
+                       singleSubscriber.onSuccess(guest.get());
+                   }else{
+                       singleSubscriber.onError(new EntityNotFoundException());
+                   }
+                }).subscribeOn(Schedulers.io());
     }
 
     private Single<Guest> addScoreToGuestRepository(Score score) {
-        return Single.<Guest> create(singleSubscriber -> {
-            Optional<Guest> guest = guestRepository.findById(score.getGuestId());
-            if (guest.isPresent()) {
-                Guest guest1 = guestRepository.save(optionalGuestToGuest(guest, score));
-                singleSubscriber.onSuccess(guest1);
-            }
-            else{
-                singleSubscriber.onError(new EntityNotFoundException());
-            }
-        }).subscribeOn(Schedulers.io());
+        return Single.<Guest> create(
+                singleSubscriber -> {
+                    Optional<Guest> guest = guestRepository.findById(score.getGuestId());
+                    if (guest.isPresent()) {
+                        Guest guest1 = guestRepository.save(optionalGuestToGuest(guest, score));
+                        singleSubscriber.onSuccess(guest1);
+                    }
+                    else{
+                        singleSubscriber.onError(new EntityNotFoundException());
+                    }
+                }).subscribeOn(Schedulers.io());
     }
 
     private Guest optionalGuestToGuest(Optional<Guest> guest , Score score) {
@@ -116,49 +129,55 @@ public class GuestServicesImpl implements GuestServices {
         return newGuest;
     }
 
-
     @Override
     public Single<List<Guest>> getGuests(String roomId) {
-        return Single.<List<Guest>> create(singleSubscriber -> {
-            List<Guest> guestList = guestRepository.findByRoomId(roomId);
-            singleSubscriber.onSuccess(guestList);
-        }).subscribeOn(Schedulers.io());
+        return Single.<List<Guest>> create(
+                singleSubscriber -> {
+                    Optional<Room> room = roomRepository.findById(roomId);
+                    if (room.isPresent()){
+                        List<Guest> guestList = guestRepository.findByRoomId(roomId);
+                        singleSubscriber.onSuccess(guestList);
+                    }else{
+                        singleSubscriber.onError(new EntityNotFoundException());
+                    }
+                }).subscribeOn(Schedulers.io());
     }
 
     @Override
     public Completable leaveRoom(String guestId) {
-        return Completable.create(completableSubscriber -> {
-            Optional<Guest> guest = guestRepository.findById(guestId);
-            if (guest.isPresent()){
-                guestRepository.delete(guest.get());
-                completableSubscriber.onCompleted();
-            }else{
-                completableSubscriber.onError(new EntityNotFoundException());
-            }
-        }).subscribeOn(Schedulers.io());
+        return Completable.create(
+                completableSubscriber -> {
+                    Optional<Guest> guest = guestRepository.findById(guestId);
+                    if (guest.isPresent()){
+                        guestRepository.delete(guest.get());
+                        completableSubscriber.onCompleted();
+                    }else{
+                        completableSubscriber.onError(new EntityNotFoundException());
+                    }
+                }).subscribeOn(Schedulers.io());
     }
 
     @Override
     public Completable endRoom(String roomId) {
-        return Completable.create(completableSubscriber -> {
+        return Completable.create(
+                completableSubscriber -> {
+                    Optional<Room> room = roomRepository.findById(roomId);
+                    if (room.isPresent()){
+                        roomRepository.deleteById(roomId);
+                    }else{
+                        completableSubscriber.onError(new EntityNotFoundException());
+                    }
 
-            Optional<Room> room = roomRepository.findById(roomId);
-            if (room.isPresent()){
-                roomRepository.deleteById(roomId);
-            }else{
-                completableSubscriber.onError(new EntityNotFoundException());
-            }
+                    List<Guest> guestList = guestRepository.findByRoomId(roomId);
+                    for (Guest guest : guestList){
+                        guestRepository.delete(guest);
+                    }
 
-            List<Guest> guestList = guestRepository.findByRoomId(roomId);
-            for (Guest guest : guestList){
-                guestRepository.delete(guest);
-            }
-
-            List<Statement> statementList = statementRepository.findStatementsByRoomId(roomId);
-            for (Statement statement : statementList){
-                statementRepository.delete(statement);
-            }
-            completableSubscriber.onCompleted();
-        }).subscribeOn(Schedulers.io());
+                    List<Statement> statementList = statementRepository.findStatementsByRoomId(roomId);
+                    for (Statement statement : statementList){
+                        statementRepository.delete(statement);
+                    }
+                    completableSubscriber.onCompleted();
+                }).subscribeOn(Schedulers.io());
     }
 }

@@ -11,5 +11,5 @@ public interface RoomServices {
 
     Single<Boolean> getPasswordByRoomId(RoomPassword roomPassword);
 
-    Room findByRoomId(String roomId);
+    Single<Room> findByRoomId(String roomId);
 }

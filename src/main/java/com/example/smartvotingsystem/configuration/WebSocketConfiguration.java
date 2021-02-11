@@ -2,17 +2,17 @@ package com.example.smartvotingsystem.configuration;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.socket.config.annotation.*;
 
 @Configuration
 @EnableWebSocketMessageBroker
-@EnableWebSocket
+@CrossOrigin
 public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
 
-    @Override
-    // TODO: 09/02/21 check *
+    @Override //http://10.177.68.31
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/chat").setAllowedOrigins("*").withSockJS();
+        registry.addEndpoint("/websocket-example").setAllowedOrigins("http://10.177.68.31:8080" , "http://127.0.0.1:5500").withSockJS();
     }
 
     @Override

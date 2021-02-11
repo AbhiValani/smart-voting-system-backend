@@ -25,22 +25,24 @@ public class StatementServicesImpl implements StatementServices {
 
     @Override
     public Single<Statement> save(Statement statement) {
-        return Single. <Statement> create(singleSubscriber -> {
-            Optional<Room> room = roomRepository.findById(statement.getRoomId());
-            if (room.isPresent()){
-                Statement newStatement = statementRepository.save(statement);
-                singleSubscriber.onSuccess(newStatement);
-                System.out.println("Statement Created");
-            }else{
-                singleSubscriber.onError(new EntityNotFoundException());
-            }
-        }).subscribeOn(Schedulers.io());
+        return Single. <Statement> create(
+                singleSubscriber -> {
+                    Optional<Room> room = roomRepository.findById(statement.getRoomId());
+                    if (room.isPresent()){
+                        Statement newStatement = statementRepository.save(statement);
+                        singleSubscriber.onSuccess(newStatement);
+                        System.out.println("Statement Created");
+                    }else{
+                        singleSubscriber.onError(new EntityNotFoundException());
+                    }
+                }).subscribeOn(Schedulers.io());
     }
     @Override
     public Single<List<Statement>> getStatements(String roomId) {
-        return  Single.<List<Statement>>create(singleSubscriber -> {
-            List<Statement> statementList = statementRepository.findStatementsByRoomId(roomId);
-            singleSubscriber.onSuccess(statementList);
-        }).subscribeOn(Schedulers.io());
+        return  Single.<List<Statement>>create(
+                singleSubscriber -> {
+                    List<Statement> statementList = statementRepository.findStatementsByRoomId(roomId);
+                    singleSubscriber.onSuccess(statementList);
+                }).subscribeOn(Schedulers.io());
     }
 }

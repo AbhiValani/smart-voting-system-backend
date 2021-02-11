@@ -9,6 +9,9 @@ public class RoomPassword {
         this.password = password;
     }
 
+    public RoomPassword() {
+    }
+
     public String getRoomId() {
         return roomId;
     }

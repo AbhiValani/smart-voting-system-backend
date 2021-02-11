@@ -21,27 +21,37 @@ public class RoomServicesImpl implements RoomServices {
 
     @Override
     public Single<Room> save(Room room) {
-        return Single.<Room>create(singleSubscriber -> {
-            singleSubscriber.onSuccess(roomRepository.save(room));
-        }).subscribeOn(Schedulers.io());
+        return Single.<Room>create(
+                singleSubscriber -> {
+                    singleSubscriber.onSuccess(roomRepository.save(room));
+                }).subscribeOn(Schedulers.io());
     }
 
     @Override
     public Single<Boolean> getPasswordByRoomId(RoomPassword roomPassword) {
-        return Single.<Boolean>create(singleSubscriber -> {
-            Optional<Room> room1 = roomRepository.findById(roomPassword.getRoomId());
-            if (room1.isPresent()){
-                Boolean checkPassword = roomPassword.getPassword().equals(room1.get().getPassword());
-                singleSubscriber.onSuccess(checkPassword);
-            }else{
-                singleSubscriber.onError(new EntityNotFoundException());
-            }
-        }).subscribeOn(Schedulers.io());
+        return Single.<Boolean>create(
+                singleSubscriber -> {
+                    Optional<Room> room1 = roomRepository.findById(roomPassword.getRoomId());
+                    if (room1.isPresent()){
+                        Boolean checkPassword = roomPassword.getPassword().equals(room1.get().getPassword());
+                        singleSubscriber.onSuccess(checkPassword);
+                    }else{
+                        singleSubscriber.onError(new EntityNotFoundException());
+                    }
+                }).subscribeOn(Schedulers.io());
     }
 
     @Override
-    public Room findByRoomId(String roomId) {
-        return roomRepository.findById(roomId).get();
+    public Single<Room> findByRoomId(String roomId) {
+        return Single. <Room> create(
+                singleSubscriber -> {
+                    Optional<Room> room = roomRepository.findById(roomId);
+                    if (room.isPresent()){
+                        singleSubscriber.onSuccess(room.get());
+                    }else{
+                        singleSubscriber.onError(new EntityNotFoundException());
+                    }
+                }).subscribeOn(Schedulers.io());
     }
 
 }
