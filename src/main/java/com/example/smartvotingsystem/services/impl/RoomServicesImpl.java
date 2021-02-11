@@ -5,11 +5,11 @@ import com.example.smartvotingsystem.entity.Room;
 import com.example.smartvotingsystem.repository.RoomRepository;
 import com.example.smartvotingsystem.services.RoomServices;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import rx.Single;
 import rx.schedulers.Schedulers;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.Optional;
 
 @Service
@@ -21,13 +21,8 @@ public class RoomServicesImpl implements RoomServices {
 
     @Override
     public Single<Room> save(Room room) {
-        return addRoomToRepository(room);
-    }
-
-    private Single<Room> addRoomToRepository(Room room) {
         return Single.<Room>create(singleSubscriber -> {
-            Room newRoom = roomRepository.save(room);
-            singleSubscriber.onSuccess(newRoom);
+            singleSubscriber.onSuccess(roomRepository.save(room));
         }).subscribeOn(Schedulers.io());
     }
 
@@ -35,8 +30,12 @@ public class RoomServicesImpl implements RoomServices {
     public Single<Boolean> getPasswordByRoomId(RoomPassword roomPassword) {
         return Single.<Boolean>create(singleSubscriber -> {
             Optional<Room> room1 = roomRepository.findById(roomPassword.getRoomId());
-            Boolean checkPassword = roomPassword.getPassword().equals(room1.get().getPassword());
-            singleSubscriber.onSuccess(checkPassword);
+            if (room1.isPresent()){
+                Boolean checkPassword = roomPassword.getPassword().equals(room1.get().getPassword());
+                singleSubscriber.onSuccess(checkPassword);
+            }else{
+                singleSubscriber.onError(new EntityNotFoundException());
+            }
         }).subscribeOn(Schedulers.io());
     }
 

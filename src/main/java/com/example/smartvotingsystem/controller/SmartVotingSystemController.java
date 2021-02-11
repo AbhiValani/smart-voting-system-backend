@@ -23,6 +23,7 @@ import rx.Single;
 import rx.schedulers.Schedulers;
 
 import java.lang.invoke.MethodHandles;
+import java.net.URI;
 import java.util.List;
 
 @Slf4j
@@ -45,14 +46,13 @@ public class SmartVotingSystemController {
     //==========================Room====================================================
 
     @PostMapping ("/createRoom")
-    public Single<ResponseEntity<Room>> createRoom (@RequestBody Room room){
-        return roomServices.save(room)
-                .map(room1 -> ResponseEntity.ok(room1));
+    public Single<BaseWebResponse<Room>> createRoom (@RequestBody Room room){
+        return roomServices.save(room).map(data -> BaseWebResponse.successWithData(data));
     }
 
     @PostMapping ("/checkPassword")
-    public Single<Boolean> checkPassword(@RequestBody RoomPassword roomPassword) {
-        return roomServices.getPasswordByRoomId(roomPassword);
+    public Single<BaseWebResponse<Boolean>> checkPassword(@RequestBody RoomPassword roomPassword) {
+        return roomServices.getPasswordByRoomId(roomPassword).map(data -> BaseWebResponse.successWithData(data));
     }
 
     @GetMapping ("/findByRoomId/{roomId}")
@@ -70,37 +70,50 @@ public class SmartVotingSystemController {
     //==========================Guest===================================================
 
     @GetMapping("/findGuestById/{guestId}")
-    public Guest findGuestById(@PathVariable("guestId") String guestId){
-        return guestServices.findGuestById(guestId);
+    public Single<BaseWebResponse<Guest>> findGuestById(@PathVariable("guestId") String guestId){
+        return guestServices.findGuestById(guestId).map(data -> BaseWebResponse.successWithData(data));
     }
 
     @PostMapping("/joinRoomAsGuest")
-    public Single<Guest> joinRoomAsGuest (@RequestBody RoomGuest roomGuest) {
-        return guestServices.addGuest(roomGuest);
+    public Single<BaseWebResponse<Guest>> joinRoomAsGuest (@RequestBody RoomGuest roomGuest) {
+        return guestServices.addGuest(roomGuest).map(data -> BaseWebResponse.successWithData(data));
     }
 
     @PostMapping("/joinRoomAsAdmin")
-    public Single<Guest> joinRoomAsAdmin(@RequestBody RoomAdmin roomAdmin){
-        return guestServices.addAdmin(roomAdmin);
+    public Single<BaseWebResponse<Guest>> joinRoomAsAdmin(@RequestBody RoomAdmin roomAdmin){
+        return guestServices.addAdmin(roomAdmin).map(data -> BaseWebResponse.successWithData(data));
     }
 
     @PostMapping("/addScore")
-    public Single<Guest> addScore(@RequestBody Score score){
-        return guestServices.addScore(score);
+    public Single<BaseWebResponse<Guest>> addScore(@RequestBody Score score){
+        return guestServices.addScore(score).map(data -> BaseWebResponse.successWithData(data));
     }
 
     @GetMapping ("/getGuests/{roomId}")
-    public Single<List<Guest>> getGuests (@PathVariable("roomId") String roomId){
-        return guestServices.getGuests(roomId);
+    public Single<BaseWebResponse<List<Guest>>> getGuests (@PathVariable("roomId") String roomId){
+        return guestServices.getGuests(roomId).map(data -> BaseWebResponse.successWithData(data));
     }
 
+    @DeleteMapping("/leaveRoom/{guestId}")
+    public Single<BaseWebResponse> leaveRoom(@PathVariable("guestId") String guestId){
+        return guestServices.leaveRoom(guestId)
+                .toSingle(() -> BaseWebResponse.successWithData(guestId));
+    }
+
+    @DeleteMapping("/endRoom/{roomId}")
+    public Single<BaseWebResponse> endRoom(@PathVariable("roomId") String roomId){
+        return guestServices.endRoom(roomId).toSingle(() -> BaseWebResponse.successWithData(roomId));
+    }
     //==========================Statement=============================================
 
     @PostMapping("/createStatement")
-    public Single<Statement> createStatement(@RequestBody Statement statement) {
-       return statementServices.save(statement).subscribeOn(Schedulers.io());
+    public Single<BaseWebResponse<Statement>> createStatement(@RequestBody Statement statement) {
+       return statementServices.save(statement).map(data -> BaseWebResponse.successWithData(data));
     }
-
+    @GetMapping("/getStatements/{roomId}")
+    public Single<BaseWebResponse<List<Statement>>> getStatements(@PathVariable("roomId") String roomId){
+        return statementServices.getStatements(roomId).map(data -> BaseWebResponse.successWithData(data));
+    }
     //==========================StatementGuest=========================================
 
     //==========================Chat===================================================

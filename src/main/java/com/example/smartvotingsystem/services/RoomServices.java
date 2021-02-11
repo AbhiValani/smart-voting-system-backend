@@ -2,7 +2,6 @@ package com.example.smartvotingsystem.services;
 
 import com.example.smartvotingsystem.dto.RoomPassword;
 import com.example.smartvotingsystem.entity.Room;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import rx.Single;
 
