@@ -1,7 +1,6 @@
 package com.example.smartvotingsystem.dto;
 
 import com.example.smartvotingsystem.exception.ErrorCode;
-import com.sun.istack.NotNull;
 import lombok.*;
 
 @Data
@@ -24,7 +23,7 @@ public class BaseWebResponse<T> {
                 .build();
     }
 
-    public BaseWebResponse mapToResponse(T data){
+    public BaseWebResponse mapToResponse(T data) {
         return BaseWebResponse.builder().data(data)
                 .build();
     }

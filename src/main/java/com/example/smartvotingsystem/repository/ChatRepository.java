@@ -10,6 +10,5 @@ import java.util.List;
 @Repository
 public interface ChatRepository extends MongoRepository<Chat, String> {
 
-    @Query(nativeQuery = true, value = "select * from chat c where c.room_id=?1")
     List<Chat> findChatsByRoomId(String roomId);
 }

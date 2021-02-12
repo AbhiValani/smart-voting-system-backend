@@ -3,12 +3,8 @@ package com.example.smartvotingsystem.services.impl;
 import com.example.smartvotingsystem.dto.RoomAdmin;
 import com.example.smartvotingsystem.dto.RoomGuest;
 import com.example.smartvotingsystem.dto.Score;
-import com.example.smartvotingsystem.entity.Guest;
-import com.example.smartvotingsystem.entity.Room;
-import com.example.smartvotingsystem.entity.Statement;
-import com.example.smartvotingsystem.repository.GuestRepository;
-import com.example.smartvotingsystem.repository.RoomRepository;
-import com.example.smartvotingsystem.repository.StatementRepository;
+import com.example.smartvotingsystem.entity.*;
+import com.example.smartvotingsystem.repository.*;
 import com.example.smartvotingsystem.services.GuestServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +29,12 @@ public class GuestServicesImpl implements GuestServices {
     @Autowired
     StatementRepository statementRepository;
 
+    @Autowired
+    StatementGuestRepository statementGuestRepository;
+
+    @Autowired
+    ChatRepository chatRepository;
+
     @Override
     public Single<Guest> addGuest(RoomGuest roomGuest) {
         return addGuestInRoom(roomGuest);
@@ -48,7 +50,8 @@ public class GuestServicesImpl implements GuestServices {
                     }else{
                        singleSubscriber.onError(new EntityNotFoundException());
                     }
-                }).subscribeOn(Schedulers.io());
+                }
+        ).subscribeOn(Schedulers.io());
     }
     private Guest toGuest(RoomGuest roomGuest) {
         Guest guest = new Guest();
@@ -74,7 +77,8 @@ public class GuestServicesImpl implements GuestServices {
                     }else{
                         singleSubscriber.onError(new EntityNotFoundException());
                     }
-                 }).subscribeOn(Schedulers.io());
+                 }
+        ).subscribeOn(Schedulers.io());
     }
 
     private Guest AdminToGuest(RoomAdmin roomAdmin) {
@@ -102,7 +106,8 @@ public class GuestServicesImpl implements GuestServices {
                    }else{
                        singleSubscriber.onError(new EntityNotFoundException());
                    }
-                }).subscribeOn(Schedulers.io());
+                }
+        ).subscribeOn(Schedulers.io());
     }
 
     private Single<Guest> addScoreToGuestRepository(Score score) {
@@ -111,12 +116,18 @@ public class GuestServicesImpl implements GuestServices {
                     Optional<Guest> guest = guestRepository.findById(score.getGuestId());
                     if (guest.isPresent()) {
                         Guest guest1 = guestRepository.save(optionalGuestToGuest(guest, score));
+                        StatementGuest statementGuest = new StatementGuest();
+                        statementGuest.setGuestId(score.getGuestId());
+                        statementGuest.setStatementId(score.getStatementId());
+                        statementGuest.setScore(score.getScore());
+                        StatementGuest statementGuest1 = statementGuestRepository.save(statementGuest);
                         singleSubscriber.onSuccess(guest1);
                     }
                     else{
                         singleSubscriber.onError(new EntityNotFoundException());
                     }
-                }).subscribeOn(Schedulers.io());
+                }
+        ).subscribeOn(Schedulers.io());
     }
 
     private Guest optionalGuestToGuest(Optional<Guest> guest , Score score) {
@@ -140,7 +151,8 @@ public class GuestServicesImpl implements GuestServices {
                     }else{
                         singleSubscriber.onError(new EntityNotFoundException());
                     }
-                }).subscribeOn(Schedulers.io());
+                }
+        ).subscribeOn(Schedulers.io());
     }
 
     @Override
@@ -154,7 +166,8 @@ public class GuestServicesImpl implements GuestServices {
                     }else{
                         completableSubscriber.onError(new EntityNotFoundException());
                     }
-                }).subscribeOn(Schedulers.io());
+                }
+        ).subscribeOn(Schedulers.io());
     }
 
     @Override
@@ -177,7 +190,13 @@ public class GuestServicesImpl implements GuestServices {
                     for (Statement statement : statementList){
                         statementRepository.delete(statement);
                     }
+
+                    List<Chat> chatList = chatRepository.findChatsByRoomId(roomId);
+                    for (Chat chat : chatList){
+                        chatRepository.delete(chat);
+                    }
                     completableSubscriber.onCompleted();
-                }).subscribeOn(Schedulers.io());
+                }
+        ).subscribeOn(Schedulers.io());
     }
 }

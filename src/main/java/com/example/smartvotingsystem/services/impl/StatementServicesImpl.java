@@ -35,7 +35,8 @@ public class StatementServicesImpl implements StatementServices {
                     }else{
                         singleSubscriber.onError(new EntityNotFoundException());
                     }
-                }).subscribeOn(Schedulers.io());
+                }
+        ).subscribeOn(Schedulers.io());
     }
     @Override
     public Single<List<Statement>> getStatements(String roomId) {
@@ -43,6 +44,7 @@ public class StatementServicesImpl implements StatementServices {
                 singleSubscriber -> {
                     List<Statement> statementList = statementRepository.findStatementsByRoomId(roomId);
                     singleSubscriber.onSuccess(statementList);
-                }).subscribeOn(Schedulers.io());
+                }
+        ).subscribeOn(Schedulers.io());
     }
 }

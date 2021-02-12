@@ -21,10 +21,12 @@ public class RoomServicesImpl implements RoomServices {
 
     @Override
     public Single<Room> save(Room room) {
+        System.out.println("Room Created" + room.toString());
         return Single.<Room>create(
                 singleSubscriber -> {
                     singleSubscriber.onSuccess(roomRepository.save(room));
-                }).subscribeOn(Schedulers.io());
+                }
+        ).subscribeOn(Schedulers.io());
     }
 
     @Override
@@ -38,7 +40,8 @@ public class RoomServicesImpl implements RoomServices {
                     }else{
                         singleSubscriber.onError(new EntityNotFoundException());
                     }
-                }).subscribeOn(Schedulers.io());
+                }
+        ).subscribeOn(Schedulers.io());
     }
 
     @Override
@@ -51,7 +54,8 @@ public class RoomServicesImpl implements RoomServices {
                     }else{
                         singleSubscriber.onError(new EntityNotFoundException());
                     }
-                }).subscribeOn(Schedulers.io());
+                }
+        ).subscribeOn(Schedulers.io());
     }
 
 }

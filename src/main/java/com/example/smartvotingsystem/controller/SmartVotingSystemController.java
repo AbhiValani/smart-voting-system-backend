@@ -1,13 +1,8 @@
 package com.example.smartvotingsystem.controller;
 import com.example.smartvotingsystem.dto.*;
-import com.example.smartvotingsystem.entity.Chat;
-import com.example.smartvotingsystem.entity.Guest;
-import com.example.smartvotingsystem.entity.Room;
-import com.example.smartvotingsystem.entity.Statement;
-import com.example.smartvotingsystem.services.ChatServices;
-import com.example.smartvotingsystem.services.GuestServices;
-import com.example.smartvotingsystem.services.RoomServices;
-import com.example.smartvotingsystem.services.StatementServices;
+import com.example.smartvotingsystem.entity.*;
+import com.example.smartvotingsystem.services.*;
+import com.example.smartvotingsystem.statistics.Statistics;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +16,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import rx.Single;
 import rx.schedulers.Schedulers;
@@ -49,10 +45,13 @@ public class SmartVotingSystemController {
     @Autowired
     ChatServices chatServices;
 
+    @Autowired
+    StatementGuestServices statementGuestServices;
     //==========================Room====================================================
 
     @PostMapping ("/createRoom")
     public Single<BaseWebResponse<Room>> createRoom (@RequestBody Room room){
+
         return roomServices.save(room)
                 .map(data -> BaseWebResponse.successWithData(data));
     }
@@ -78,9 +77,12 @@ public class SmartVotingSystemController {
 
     @PostMapping("/joinRoomAsGuest")
     public Single<BaseWebResponse<Guest>> joinRoomAsGuest (@RequestBody RoomGuest roomGuest) {
+        System.out.println("Room Guest Hitted");
         return guestServices.addGuest(roomGuest)
                 .map(data -> BaseWebResponse.successWithData(data));
     }
+
+
 
     @PostMapping("/joinRoomAsAdmin")
     public Single<BaseWebResponse<Guest>> joinRoomAsAdmin(@RequestBody RoomAdmin roomAdmin){
@@ -124,27 +126,67 @@ public class SmartVotingSystemController {
                 .map(data -> BaseWebResponse.successWithData(data));
     }
     //==========================StatementGuest=========================================
+    @GetMapping("/getMean/{statementId}")
+    public Single<BaseWebResponse<Double>> getMean(@PathVariable("statementId") String statementId){
+        return statementGuestServices.getMean(statementId)
+                .map(data -> BaseWebResponse.successWithData(data));
+    }
 
+    @GetMapping("/getMedian/{statementId}")
+    public Single<BaseWebResponse<Double>> getMedian(@PathVariable("statementId") String statementId){
+        return statementGuestServices.getMedian(statementId)
+                .map(data -> BaseWebResponse.successWithData(data));
+    }
+
+    @GetMapping("/getMode/{statementId}")
+    public Single<BaseWebResponse<Integer>> getMode(@PathVariable("statementId") String statementId){
+        return statementGuestServices.getMode(statementId)
+                .map(data -> BaseWebResponse.successWithData(data));
+    }
     //==========================Chat===================================================
-
-    @MessageMapping("/chat.register")
-    @SendTo("/topic/public")
-    public Chat register(Chat chat, SimpMessageHeaderAccessor headerAccessor) {
-        headerAccessor.getSessionAttributes().put("guestName", chat.getGuestName());
-        return chat;
-    }
-
-    @MessageExceptionHandler()
-    @MessageMapping("/chat-send")
-    @SendTo("/topic/public")
-    public Chat sendMessage( @Payload Chat chat) {
-        System.out.println(chat.toString());
-        return chatServices.addChat(chat);
-    }
 
     @GetMapping("/getChats/{roomId}")
     public Single<BaseWebResponse<List<Chat>>> getChats(@PathVariable("roomId") String roomId){
         return chatServices.getChatsByRoomId(roomId)
                 .map(data -> BaseWebResponse.successWithData(data));
     }
+
+    //===============================WebSocket===========================================
+    @MessageExceptionHandler()
+    @MessageMapping("/chat-send")
+    @SendTo("/topic/chat")
+    public Chat sendMessage( @Payload Chat chat) {
+        System.out.println(chat.toString());
+        Chat chat1 = chatServices.addChat(chat);
+        return chat;
+    }
+
+
+    @MessageExceptionHandler()
+    @MessageMapping("/statement")
+    @SendTo("/topic/statement")
+    public Statement sendStatement (@Payload Statement statement){
+        System.out.println(statement.toString());
+        return statement;
+    }
+
+
+    @MessageExceptionHandler()
+    @MessageMapping("/joinRoomSocket")
+    @SendTo("/topic/joinRoomSocket")
+    public Guest joinRoomSocket(@Payload Guest guest){
+        System.out.println("JoinRoomSocket Hitted");
+        return guest;
+    }
+
+    @MessageExceptionHandler()
+    @MessageMapping("/removeGuestSocket")
+    @SendTo("/topic/removeGuestSocket")
+    public String removeGuestSocket(@Payload String guestId){
+        System.out.println("Leave Room Guest Hitted");
+        guestServices.leaveRoom(guestId);
+        return guestId;
+    }
+
+
 }

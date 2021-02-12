@@ -46,6 +46,7 @@ public class ChatServicesImpl implements ChatServices {
                     }else{
                         singleSubscriber.onError(new EntityNotFoundException());
                     }
-                }).subscribeOn(Schedulers.io());
+                }
+        ).subscribeOn(Schedulers.io());
     }
 }
