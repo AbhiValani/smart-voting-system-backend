@@ -2,27 +2,17 @@ package com.example.smartvotingsystem.controller;
 import com.example.smartvotingsystem.dto.*;
 import com.example.smartvotingsystem.entity.*;
 import com.example.smartvotingsystem.services.*;
-import com.example.smartvotingsystem.statistics.Statistics;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import rx.Single;
-import rx.schedulers.Schedulers;
-
 import java.lang.invoke.MethodHandles;
-import java.net.URI;
 import java.util.List;
 
 @Slf4j
@@ -31,7 +21,6 @@ import java.util.List;
 @RequestMapping(value = "/svs")
 public class SmartVotingSystemController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Autowired
     RoomServices roomServices;
@@ -47,11 +36,11 @@ public class SmartVotingSystemController {
 
     @Autowired
     StatementGuestServices statementGuestServices;
+
     //==========================Room====================================================
 
     @PostMapping ("/createRoom")
     public Single<BaseWebResponse<Room>> createRoom (@RequestBody Room room){
-
         return roomServices.save(room)
                 .map(data -> BaseWebResponse.successWithData(data));
     }
@@ -103,15 +92,13 @@ public class SmartVotingSystemController {
     }
 
     @DeleteMapping("/leaveRoom/{guestId}")
-    public Single<BaseWebResponse> leaveRoom(@PathVariable("guestId") String guestId){
-        return guestServices.leaveRoom(guestId)
-                .toSingle(() -> BaseWebResponse.successWithData(guestId));
+    public void leaveRoom(@PathVariable("guestId") String guestId){
+         guestServices.leaveRoom(guestId);
     }
 
     @DeleteMapping("/endRoom/{roomId}")
-    public Single<BaseWebResponse> endRoom(@PathVariable("roomId") String roomId){
-        return guestServices.endRoom(roomId)
-                .toSingle(() -> BaseWebResponse.successWithData(roomId));
+    public void endRoom(@PathVariable("roomId") String roomId){
+        guestServices.endRoom(roomId);
     }
     //==========================Statement=============================================
 
@@ -127,21 +114,16 @@ public class SmartVotingSystemController {
     }
     //==========================StatementGuest=========================================
     @GetMapping("/getMean/{statementId}")
-    public Single<BaseWebResponse<Double>> getMean(@PathVariable("statementId") String statementId){
-        return statementGuestServices.getMean(statementId)
-                .map(data -> BaseWebResponse.successWithData(data));
+    public double getMean(@PathVariable("statementId") String statementId){
+        return  statementGuestServices.getMean(statementId);
     }
-
     @GetMapping("/getMedian/{statementId}")
-    public Single<BaseWebResponse<Double>> getMedian(@PathVariable("statementId") String statementId){
-        return statementGuestServices.getMedian(statementId)
-                .map(data -> BaseWebResponse.successWithData(data));
+    public double getMedian(@PathVariable("statementId") String statementId){
+        return statementGuestServices.getMedian(statementId);
     }
-
     @GetMapping("/getMode/{statementId}")
-    public Single<BaseWebResponse<Integer>> getMode(@PathVariable("statementId") String statementId){
-        return statementGuestServices.getMode(statementId)
-                .map(data -> BaseWebResponse.successWithData(data));
+    public int getMode(@PathVariable("statementId") String statementId){
+        return statementGuestServices.getMode(statementId);
     }
     //==========================Chat===================================================
 
@@ -182,11 +164,29 @@ public class SmartVotingSystemController {
     @MessageExceptionHandler()
     @MessageMapping("/removeGuestSocket")
     @SendTo("/topic/removeGuestSocket")
-    public String removeGuestSocket(@Payload String guestId){
-        System.out.println("Leave Room Guest Hitted");
-        guestServices.leaveRoom(guestId);
-        return guestId;
+    public String removeGuestSocket(@Payload Guest guest){
+        System.out.println("Leave Room Guest Hitted" + guest.getGuestId());
+        guestServices.leaveRoom(guest.getGuestId());
+        return guest.getGuestId();
     }
 
+    @MessageExceptionHandler()
+    @MessageMapping("/removeAdminSocket")
+    @SendTo("/topic/removeAdminSocket")
+    public String removeAdminSocket(@Payload Room room){
+        System.out.println("End Room Admin Hitted"+ room.getRoomId());
+        guestServices.endRoom(room.getRoomId());
+        return room.getRoomId();
+    }
 
+//    @MessageExceptionHandler()
+//    @MessageMapping("/getStatistics")
+//    @SendTo("topic/getStatistics")
+//    public Statistics getStatistics(@Payload String statementId){
+//        Statistics statistics = new Statistics();
+//        statistics.setMean(statementGuestServices.getMean(statementId));
+//        statistics.setMedian(statementGuestServices.getMedian(statementId));
+//        statistics.setMode(statementGuestServices.getMode(statementId));
+//        return statistics;
+//    }
 }

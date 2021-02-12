@@ -5,7 +5,6 @@ import com.example.smartvotingsystem.entity.Room;
 import com.example.smartvotingsystem.repository.ChatRepository;
 import com.example.smartvotingsystem.repository.RoomRepository;
 import com.example.smartvotingsystem.services.ChatServices;
-import com.example.smartvotingsystem.services.GuestServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rx.Single;
@@ -24,11 +23,6 @@ public class ChatServicesImpl implements ChatServices {
     @Autowired
     RoomRepository roomRepository;
 
-//    public Single<Chat> addChat(Chat chat) {
-//        return Single.<Chat> create(singleSubscriber -> {
-//            singleSubscriber.onSuccess(chatRepository.save(chat));
-//        }).subscribeOn(Schedulers.io());
-//    }
 
     @Override
     public Chat addChat(Chat chat) {

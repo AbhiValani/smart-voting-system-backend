@@ -1,7 +1,6 @@
 package com.example.smartvotingsystem.repository;
 
 import com.example.smartvotingsystem.entity.Chat;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

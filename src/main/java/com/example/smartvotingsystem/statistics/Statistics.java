@@ -1,5 +1,6 @@
 package com.example.smartvotingsystem.statistics;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,14 +57,15 @@ public class Statistics {
     public double getMedian(List<Integer> scoreList){
         int size = scoreList.size();
         double median = 0;
+        Collections.sort(scoreList);
         if (size == 0)
-            return 0;
+            median = 0;
         else if (size % 2 == 1){
-            median = scoreList.get(size / 2 + 1);
+            median = scoreList.get((size + 1) / 2 - 1);
         }
         else if (size % 2 == 0){
-            int first = scoreList.get(size / 2);
-            int second = scoreList.get(size / 2 + 1);
+            int first = scoreList.get(size / 2 - 1);
+            int second = scoreList.get(size / 2);
             median =  ((first + second) / 2);
         }
         setMedian(median);
@@ -83,10 +85,11 @@ public class Statistics {
             if (cnt == 0){
                 mode = key;
                 frequency = value;
+                cnt++;
             }else{
                 if (frequency < value){
                     frequency = value;
-                    mode = value;
+                    mode = key;
                 }
                 else if (frequency == value){
                     double mean = getMean(scoreList);

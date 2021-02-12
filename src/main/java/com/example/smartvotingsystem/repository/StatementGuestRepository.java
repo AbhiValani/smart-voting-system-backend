@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface StatementGuestRepository extends MongoRepository<StatementGuest , String> {
     List<StatementGuest> findByStatementId(String statementId);
+
 }

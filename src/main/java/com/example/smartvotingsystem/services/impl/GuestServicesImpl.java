@@ -1,18 +1,20 @@
 package com.example.smartvotingsystem.services.impl;
 
+import com.example.smartvotingsystem.dto.BaseWebResponse;
 import com.example.smartvotingsystem.dto.RoomAdmin;
 import com.example.smartvotingsystem.dto.RoomGuest;
 import com.example.smartvotingsystem.dto.Score;
 import com.example.smartvotingsystem.entity.*;
+import com.example.smartvotingsystem.exception.ErrorCode;
 import com.example.smartvotingsystem.repository.*;
 import com.example.smartvotingsystem.services.GuestServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rx.Completable;
 import rx.Single;
 import rx.schedulers.Schedulers;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -71,7 +73,15 @@ public class GuestServicesImpl implements GuestServices {
         return Single.<Guest> create(
                 singleSubscriber -> {
                     Optional<Room> room = roomRepository.findById(roomAdmin.getRoomId());
-                    if (room.isPresent()){
+                    List<Guest> guestList = guestRepository.findByRoomId(roomAdmin.getRoomId());
+                    boolean admin = false;
+                    for (Guest guest : guestList){
+                        if (guest.getGuestName().equals("admin")){
+                            admin = true;
+                            break;
+                        }
+                    }
+                    if (room.isPresent() && !admin){
                         Guest guest = guestRepository.save(AdminToGuest(roomAdmin));
                         singleSubscriber.onSuccess(guest);
                     }else{
@@ -156,47 +166,46 @@ public class GuestServicesImpl implements GuestServices {
     }
 
     @Override
-    public Completable leaveRoom(String guestId) {
-        return Completable.create(
-                completableSubscriber -> {
-                    Optional<Guest> guest = guestRepository.findById(guestId);
-                    if (guest.isPresent()){
-                        guestRepository.delete(guest.get());
-                        completableSubscriber.onCompleted();
-                    }else{
-                        completableSubscriber.onError(new EntityNotFoundException());
-                    }
-                }
-        ).subscribeOn(Schedulers.io());
+    public void leaveRoom(String guestId) {
+        System.out.println("Coming");
+        guestRepository.deleteById(guestId);
     }
 
     @Override
-    public Completable endRoom(String roomId) {
-        return Completable.create(
-                completableSubscriber -> {
-                    Optional<Room> room = roomRepository.findById(roomId);
-                    if (room.isPresent()){
-                        roomRepository.deleteById(roomId);
-                    }else{
-                        completableSubscriber.onError(new EntityNotFoundException());
-                    }
-
-                    List<Guest> guestList = guestRepository.findByRoomId(roomId);
-                    for (Guest guest : guestList){
-                        guestRepository.delete(guest);
-                    }
-
-                    List<Statement> statementList = statementRepository.findStatementsByRoomId(roomId);
-                    for (Statement statement : statementList){
-                        statementRepository.delete(statement);
-                    }
-
-                    List<Chat> chatList = chatRepository.findChatsByRoomId(roomId);
-                    for (Chat chat : chatList){
-                        chatRepository.delete(chat);
-                    }
-                    completableSubscriber.onCompleted();
+    public void endRoom(String roomId) {
+        System.out.println("END-ROOM" + roomId);
+        Optional<Room> room = roomRepository.findById(roomId);
+        System.out.println(room.toString());
+        if (room.isPresent()){
+            System.out.println("EndRoom=====");
+            List<Guest> guestList = guestRepository.findByRoomId(roomId);
+            System.out.println(guestList);
+            for (Guest guest : guestList){
+                guestRepository.deleteById(guest.getGuestId());
+            }
+            List<Statement> statementList = statementRepository.findByRoomId(roomId);
+            List<String> stringList = new ArrayList<>();
+            System.out.println(statementList);
+            for (Statement statement : statementList){
+                stringList.add(statement.getStatementId());
+                statementRepository.deleteById(statement.getStatementId());
+            }
+            List<Chat> chatList = chatRepository.findChatsByRoomId(roomId);
+            System.out.println(chatList);
+            for (Chat chat : chatList){
+                chatRepository.deleteById(chat.getRoomId());
+            }
+            System.out.println(stringList);
+            for (String id : stringList){
+                List<StatementGuest> statementGuestList = statementGuestRepository.findByStatementId(id);
+                System.out.println(statementGuestList);
+                for (StatementGuest statementGuest : statementGuestList){
+                    statementGuestRepository.deleteById(statementGuest.getId());
                 }
-        ).subscribeOn(Schedulers.io());
+            }
+            roomRepository.deleteById(roomId);
+        }else{
+            System.out.println(BaseWebResponse.error(ErrorCode.ENTITY_NOT_FOUND));
+        }
     }
 }

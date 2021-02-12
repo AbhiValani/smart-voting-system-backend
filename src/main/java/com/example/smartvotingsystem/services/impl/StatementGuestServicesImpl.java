@@ -6,8 +6,6 @@ import com.example.smartvotingsystem.services.StatementGuestServices;
 import com.example.smartvotingsystem.statistics.Statistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rx.Single;
-import rx.schedulers.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,40 +20,27 @@ public class StatementGuestServicesImpl implements StatementGuestServices {
     @Override
     public List<Integer> findById(String statementId) {
         List<StatementGuest> statementGuestList = statementGuestRepository.findByStatementId(statementId);
+        System.out.println(statementGuestList);
         List<Integer> list = new ArrayList<>();
         for (StatementGuest statementGuest : statementGuestList){
             list.add(statementGuest.getScore());
         }
+        System.out.println(list);
         return list;
     }
 
     @Override
-    public Single<Double> getMean(String statementId) {
-        return Single. <Double> create(
-                singleSubscriber -> {
-                   double mean =  statistics.getMean(findById(statementId));
-                   singleSubscriber.onSuccess(mean);
-                }
-        ).subscribeOn(Schedulers.io());
+    public double getMean(String statementId) {
+        return statistics.getMean(findById(statementId));
     }
 
     @Override
-    public Single<Double> getMedian(String statementId) {
-        return Single. <Double> create(
-                singleSubscriber -> {
-                    double median = statistics.getMedian(findById(statementId));
-                    singleSubscriber.onSuccess(median);
-                }
-        ).subscribeOn(Schedulers.io());
+    public double getMedian(String statementId) {
+        return statistics.getMedian(findById(statementId));
     }
 
     @Override
-    public Single<Integer> getMode(String statementId) {
-        return Single. <Integer> create(
-                singleSubscriber -> {
-                    int mode = statistics.getMode(findById(statementId));
-                    singleSubscriber.onSuccess(mode);
-                }
-        ).subscribeOn(Schedulers.io());
+    public int getMode(String statementId) {
+       return statistics.getMode(findById(statementId));
     }
 }
