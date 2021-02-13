@@ -131,6 +131,7 @@ public class GuestServicesImpl implements GuestServices {
                         statementGuest.setStatementId(score.getStatementId());
                         statementGuest.setScore(score.getScore());
                         StatementGuest statementGuest1 = statementGuestRepository.save(statementGuest);
+                        System.out.println("Add Score-------" + score.toString());
                         singleSubscriber.onSuccess(guest1);
                     }
                     else{
@@ -178,31 +179,9 @@ public class GuestServicesImpl implements GuestServices {
         System.out.println(room.toString());
         if (room.isPresent()){
             System.out.println("EndRoom=====");
-            List<Guest> guestList = guestRepository.findByRoomId(roomId);
-            System.out.println(guestList);
-            for (Guest guest : guestList){
-                guestRepository.deleteById(guest.getGuestId());
-            }
-            List<Statement> statementList = statementRepository.findByRoomId(roomId);
-            List<String> stringList = new ArrayList<>();
-            System.out.println(statementList);
-            for (Statement statement : statementList){
-                stringList.add(statement.getStatementId());
-                statementRepository.deleteById(statement.getStatementId());
-            }
-            List<Chat> chatList = chatRepository.findChatsByRoomId(roomId);
-            System.out.println(chatList);
-            for (Chat chat : chatList){
-                chatRepository.deleteById(chat.getRoomId());
-            }
-            System.out.println(stringList);
-            for (String id : stringList){
-                List<StatementGuest> statementGuestList = statementGuestRepository.findByStatementId(id);
-                System.out.println(statementGuestList);
-                for (StatementGuest statementGuest : statementGuestList){
-                    statementGuestRepository.deleteById(statementGuest.getId());
-                }
-            }
+            guestRepository.deleteByRoomId(roomId);
+            statementRepository.deleteByRoomId(roomId);
+            chatRepository.deleteByRoomId(roomId);
             roomRepository.deleteById(roomId);
         }else{
             System.out.println(BaseWebResponse.error(ErrorCode.ENTITY_NOT_FOUND));

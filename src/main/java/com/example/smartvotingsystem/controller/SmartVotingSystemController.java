@@ -116,6 +116,15 @@ public class SmartVotingSystemController {
         return statementServices.getCurrentStatement(roomId).map(data -> BaseWebResponse.successWithData(data));
     }
     //==========================StatementGuest=========================================
+    @GetMapping("/getStatistics/{statementId}")
+    public Statistics getStatistics(@PathVariable ("statementId") String statementId){
+        Statistics statistics = new Statistics();
+        statistics.setMean(statementGuestServices.getMean(statementId));
+        statistics.setMedian(statementGuestServices.getMedian(statementId));
+        statistics.setMode(statementGuestServices.getMode(statementId));
+        return statistics;
+    }
+
     @GetMapping("/getMean/{statementId}")
     public double getMean(@PathVariable("statementId") String statementId){
         return  statementGuestServices.getMean(statementId);
@@ -127,6 +136,11 @@ public class SmartVotingSystemController {
     @GetMapping("/getMode/{statementId}")
     public int getMode(@PathVariable("statementId") String statementId){
         return statementGuestServices.getMode(statementId);
+    }
+
+    @GetMapping("/getGuestsByStatementId/{statementId}")
+    public List<StatementGuest> getGuestsByStatementId(@PathVariable("statementId") String statementId){
+        return statementGuestServices.findByStatementId(statementId);
     }
     //==========================Chat===================================================
 
@@ -185,14 +199,11 @@ public class SmartVotingSystemController {
         return room.getRoomId();
     }
 
-//    @MessageExceptionHandler()
-//    @MessageMapping("/getStatistics")
-//    @SendTo("topic/getStatistics")
-//    public Statistics getStatistics(@Payload StatementGuest statementGuest){
-//        Statistics statistics = new Statistics();
-//        statistics.setMean(statementGuestServices.getMean(statementGuest.getStatementId()));
-//        statistics.setMedian(statementGuestServices.getMedian(statementGuest.getStatementId()));
-//        statistics.setMode(statementGuestServices.getMode(statementGuest.getStatementId()));
-//        return statistics;
-//    }
+    @MessageExceptionHandler()
+    @MessageMapping("/addScoreSocket")
+    @SendTo("/topic/addScoreSocket")
+    public Single<BaseWebResponse<Guest>> addScoreSocket (@Payload Score score){
+        return guestServices.addScore(score)
+                .map(data -> BaseWebResponse.successWithData(data));
+    }
 }

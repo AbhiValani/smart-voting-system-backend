@@ -1,7 +1,9 @@
 package com.example.smartvotingsystem.services.impl;
 
+import com.example.smartvotingsystem.entity.Guest;
 import com.example.smartvotingsystem.entity.Room;
 import com.example.smartvotingsystem.entity.Statement;
+import com.example.smartvotingsystem.repository.GuestRepository;
 import com.example.smartvotingsystem.repository.RoomRepository;
 import com.example.smartvotingsystem.repository.StatementRepository;
 import com.example.smartvotingsystem.services.StatementServices;
@@ -24,6 +26,9 @@ public class StatementServicesImpl implements StatementServices {
     @Autowired
     RoomRepository roomRepository;
 
+    @Autowired
+    GuestRepository guestRepository;
+
     String lastStatementId;
 
     @Override
@@ -45,6 +50,15 @@ public class StatementServicesImpl implements StatementServices {
                         lastStatementId = statement.getStatementId();
                         singleSubscriber.onSuccess(newStatement);
                         System.out.println("Statement Created");
+
+                        // Set All Guest -> isVoted False;
+                        List<Guest> guestList = guestRepository.findByRoomId(statement.getRoomId());
+                        for (Guest guest : guestList){
+                            guest.setVoted(false);
+                            guest.setGuestScore(0);
+                            guestRepository.save(guest);
+                        }
+                        System.out.println("Guest Updated");
                     }else{
                         singleSubscriber.onError(new EntityNotFoundException());
                     }

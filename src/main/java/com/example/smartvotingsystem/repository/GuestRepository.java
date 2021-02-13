@@ -11,4 +11,6 @@ import java.util.List;
 public interface GuestRepository extends MongoRepository<Guest , String> , CrudRepository<Guest , String> {
 
     List<Guest> findByRoomId(String roomId);
+
+    void deleteByRoomId(String roomId);
 }

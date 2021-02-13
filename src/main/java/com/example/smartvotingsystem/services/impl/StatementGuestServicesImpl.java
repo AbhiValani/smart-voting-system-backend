@@ -53,4 +53,9 @@ public class StatementGuestServicesImpl implements StatementGuestServices {
     public int getMode(String statementId) {
        return statistics.getMode(findById(statementId));
     }
+
+    @Override
+    public List<StatementGuest> findByStatementId(String statementId) {
+        return statementGuestRepository.findByStatementId(statementId);
+    }
 }

@@ -16,4 +16,5 @@ public interface StatementRepository extends MongoRepository<Statement , String>
 
     Statement findByStatementId(String statementId);
 
+    void deleteByRoomId(String roomId);
 }
