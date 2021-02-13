@@ -1,7 +1,9 @@
 package com.example.smartvotingsystem.services.impl;
 
+import com.example.smartvotingsystem.entity.Statement;
 import com.example.smartvotingsystem.entity.StatementGuest;
 import com.example.smartvotingsystem.repository.StatementGuestRepository;
+import com.example.smartvotingsystem.repository.StatementRepository;
 import com.example.smartvotingsystem.services.StatementGuestServices;
 import com.example.smartvotingsystem.statistics.Statistics;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,9 @@ public class StatementGuestServicesImpl implements StatementGuestServices {
 
     @Autowired
     StatementGuestRepository statementGuestRepository;
+
+    @Autowired
+    StatementRepository statementRepository;
 
     Statistics statistics = new Statistics();
 
@@ -31,7 +36,12 @@ public class StatementGuestServicesImpl implements StatementGuestServices {
 
     @Override
     public double getMean(String statementId) {
-        return statistics.getMean(findById(statementId));
+        Statement statement = statementRepository.findByStatementId(statementId);
+        double mean = statistics.getMean(findById(statementId));
+        statement.setAvgScore(mean);
+        statementRepository.deleteById(statement.getStatementId());
+        Statement statement1 = statementRepository.save(statement);
+        return mean;
     }
 
     @Override

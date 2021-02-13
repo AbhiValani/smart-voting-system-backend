@@ -2,6 +2,7 @@ package com.example.smartvotingsystem.repository;
 
 import com.example.smartvotingsystem.entity.Statement;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,4 +13,7 @@ public interface StatementRepository extends MongoRepository<Statement , String>
     List<Statement> findByRoomId(String roomId);
 
     List<Statement> findStatementsByRoomId(String roomId);
+
+    Statement findByStatementId(String statementId);
+
 }

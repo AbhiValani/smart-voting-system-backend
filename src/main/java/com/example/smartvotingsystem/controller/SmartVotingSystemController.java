@@ -2,9 +2,8 @@ package com.example.smartvotingsystem.controller;
 import com.example.smartvotingsystem.dto.*;
 import com.example.smartvotingsystem.entity.*;
 import com.example.smartvotingsystem.services.*;
+import com.example.smartvotingsystem.statistics.Statistics;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -12,7 +11,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 import rx.Single;
-import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 @Slf4j
@@ -112,6 +110,11 @@ public class SmartVotingSystemController {
         return statementServices.getStatements(roomId)
                 .map(data -> BaseWebResponse.successWithData(data));
     }
+
+    @GetMapping("/getCurrentStatement/{roomId}")
+    public Single<BaseWebResponse<Statement>> getCurrentStatement(@PathVariable ("roomId") String roomId){
+        return statementServices.getCurrentStatement(roomId).map(data -> BaseWebResponse.successWithData(data));
+    }
     //==========================StatementGuest=========================================
     @GetMapping("/getMean/{statementId}")
     public double getMean(@PathVariable("statementId") String statementId){
@@ -149,6 +152,8 @@ public class SmartVotingSystemController {
     @SendTo("/topic/statement")
     public Statement sendStatement (@Payload Statement statement){
         System.out.println(statement.toString());
+        statementServices.save(statement)
+                .map(data -> BaseWebResponse.successWithData(data));
         return statement;
     }
 
@@ -175,6 +180,7 @@ public class SmartVotingSystemController {
     @SendTo("/topic/removeAdminSocket")
     public String removeAdminSocket(@Payload Room room){
         System.out.println("End Room Admin Hitted"+ room.getRoomId());
+        statementServices.setNull();
         guestServices.endRoom(room.getRoomId());
         return room.getRoomId();
     }
@@ -182,11 +188,11 @@ public class SmartVotingSystemController {
 //    @MessageExceptionHandler()
 //    @MessageMapping("/getStatistics")
 //    @SendTo("topic/getStatistics")
-//    public Statistics getStatistics(@Payload String statementId){
+//    public Statistics getStatistics(@Payload StatementGuest statementGuest){
 //        Statistics statistics = new Statistics();
-//        statistics.setMean(statementGuestServices.getMean(statementId));
-//        statistics.setMedian(statementGuestServices.getMedian(statementId));
-//        statistics.setMode(statementGuestServices.getMode(statementId));
+//        statistics.setMean(statementGuestServices.getMean(statementGuest.getStatementId()));
+//        statistics.setMedian(statementGuestServices.getMedian(statementGuest.getStatementId()));
+//        statistics.setMode(statementGuestServices.getMode(statementGuest.getStatementId()));
 //        return statistics;
 //    }
 }

@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rx.Single;
 import rx.schedulers.Schedulers;
-
 import javax.persistence.EntityNotFoundException;
 import java.util.Optional;
 
