@@ -14,9 +14,13 @@ import java.util.Optional;
 @Service
 public class RoomServicesImpl implements RoomServices {
 
-    @Autowired
+//    @Autowired
     RoomRepository roomRepository;
 
+    @Autowired
+    public RoomServicesImpl(RoomRepository roomRepository) {
+        this.roomRepository = roomRepository;
+    }
 
     @Override
     public Single<Room> save(Room room) {

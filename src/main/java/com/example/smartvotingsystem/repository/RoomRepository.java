@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 @EnableMongoRepositories
 @Repository
 public interface RoomRepository extends MongoRepository<Room , String> , CrudRepository<Room , String> {
+
 }

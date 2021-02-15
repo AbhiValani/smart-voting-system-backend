@@ -37,10 +37,13 @@ public class StatementGuestServicesImpl implements StatementGuestServices {
     @Override
     public double getMean(String statementId) {
         Statement statement = statementRepository.findByStatementId(statementId);
-        double mean = statistics.getMean(findById(statementId));
-        statement.setAvgScore(mean);
-        statementRepository.deleteById(statement.getStatementId());
-        Statement statement1 = statementRepository.save(statement);
+        double mean = 0;
+        if (statementId != null) {
+            mean = statistics.getMean(findById(statementId));
+            statement.setAvgScore(mean);
+            statementRepository.deleteById(statement.getStatementId());
+            statementRepository.save(statement);
+        }
         return mean;
     }
 

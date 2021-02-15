@@ -1,12 +1,9 @@
 package com.example.smartvotingsystem.entity;
 
-import com.sun.istack.NotNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.Column;
-import javax.persistence.Index;
 import java.util.UUID;
 
 @Document("room")
@@ -20,6 +17,12 @@ public class Room {
     private String password;
 
     public Room() {
+    }
+
+    public Room(String roomName, String roomDescription, String password) {
+        this.roomName = roomName;
+        this.roomDescription = roomDescription;
+        this.password = password;
     }
 
     public Room(String roomId, String roomName, String roomDescription, String password) {
